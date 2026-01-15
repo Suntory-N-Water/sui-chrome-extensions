@@ -1,0 +1,56 @@
+{
+  "name": "chrome-extension-vite-template",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "React + TypeScript + Vite を使用した Chrome 拡張機能開発のための pnpm モノレポテンプレート",
+  "author": "sui",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Suntory-N-Water/chrome-extension-vite-template.git"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "bugs": {
+    "url": "https://github.com/Suntory-N-Water/chrome-extension-vite-template/issues"
+  },
+  "homepage": "https://github.com/Suntory-N-Water/chrome-extension-vite-template#readme",
+  "keywords": [
+    "chrome-extension",
+    "vite",
+    "react",
+    "typescript",
+    "pnpm",
+    "monorepo",
+    "template"
+  ],
+  "scripts": {
+    "dev:example": "pnpm --filter example-extension dev",
+    "build:example": "pnpm --filter example-extension build",
+    "build:all": "pnpm -r --parallel build",
+    "changeset": "changeset",
+    "version": "changeset version && pnpm run sync-manifest",
+    "sync-manifest": "tsx scripts/sync-manifest-version.ts",
+    "release": "changeset tag && pnpm run create-zip-releases",
+    "create-zip-releases": "tsx scripts/create-zip-releases.ts",
+    "format": "biome format --write ./packages",
+    "check": "biome check ./packages",
+    "check:fix": "biome check --write ./packages",
+    "lint:ai": "biome lint --reporter=github ./packages 2>&1 | { grep '^::' || true; }",
+    "type-check": "pnpm -r exec tsc --noEmit",
+    "type-check:ai": "pnpm -r exec tsc --noEmit --pretty false"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.8",
+    "@changesets/changelog-github": "^0.5.2",
+    "@changesets/cli": "^2.29.8",
+    "@types/node": "^25.0.8",
+    "glob": "^13.0.0",
+    "globals": "^16.5.0",
+    "tsx": "^4.21.0",
+    "typescript": "~5.9.3"
+  }
+}

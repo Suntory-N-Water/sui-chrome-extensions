@@ -1,4 +1,4 @@
-import { Button } from '@chrome-extension-template/ui';
+import { Button } from '@sui-chrome-extensions/ui';
 import { useState } from 'react';
 
 export default function App() {

@@ -1,5 +1,5 @@
 {
-  "name": "@chrome-extension-template/example-extension",
+  "name": "@sui-chrome-extensions/example-extension",
   "version": "0.0.1",
   "type": "module",
   "scripts": {
@@ -8,7 +8,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@chrome-extension-template/ui": "workspace:*",
+    "@sui-chrome-extensions/ui": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

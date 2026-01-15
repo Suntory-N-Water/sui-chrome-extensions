@@ -1,4 +1,4 @@
-# Chrome Extension Vite Template
+# Sui Chrome Extension
 
 React + TypeScript + Vite を使用した Chrome 拡張機能開発のための pnpm モノレポテンプレート
 
@@ -50,7 +50,7 @@ pnpm type-check
 ## プロジェクト構造
 
 ```
-chrome-extension-vite-template/
+sui-chrome-extensions/
 ├── packages/
 │   ├── ui/                    # 共有UIコンポーネント
 │   └── example-extension/     # サンプル拡張機能
@@ -73,8 +73,8 @@ cp -r packages/example-extension packages/my-extension
 ## 共有UIコンポーネントの使用
 
 ```typescript
-import { Button } from '@chrome-extension-template/ui';
-import '@chrome-extension-template/ui/styles';
+import { Button } from '@sui-chrome-extensions/ui';
+import '@sui-chrome-extensions/ui/styles';
 ```
 
 ## リリース管理

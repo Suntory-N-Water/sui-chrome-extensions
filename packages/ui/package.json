@@ -1,5 +1,5 @@
 {
-  "name": "@chrome-extension-template/ui",
+  "name": "@sui-chrome-extensions/ui",
   "version": "0.0.1",
   "private": true,
   "type": "module",

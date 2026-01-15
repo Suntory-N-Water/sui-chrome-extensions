@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import '@chrome-extension-template/ui/styles';
+import '@sui-chrome-extensions/ui/styles';
 import App from './App';
 
 createRoot(document.getElementById('root')!).render(

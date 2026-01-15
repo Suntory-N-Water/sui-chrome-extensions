@@ -71,7 +71,7 @@ importers:
 
   packages/example-extension:
     dependencies:
-      '@chrome-extension-template/ui':
+      '@sui-chrome-extensions/ui':
         specifier: workspace:*
         version: link:../ui
       react:

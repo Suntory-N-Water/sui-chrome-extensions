@@ -25,7 +25,7 @@ Chrome拡張機能を迅速に開発するための、モダンなフロント�
 ### モノレポ構造
 
 ```
-chrome-extension-vite-template/
+sui-chrome-extensions/
 ├── packages/
 │   ├── ui/                          # 共有UIコンポーネントパッケージ
 │   │   ├── src/
@@ -83,11 +83,11 @@ pnpm type-check
 
 ### 共有UIパッケージの使用
 
-`@chrome-extension-template/ui` パッケージから共通コンポーネントをインポートします。
+`@sui-chrome-extensions/ui` パッケージから共通コンポーネントをインポートします。
 
 ```typescript
-import { Button } from '@chrome-extension-template/ui';
-import '@chrome-extension-template/ui/styles';
+import { Button } from '@sui-chrome-extensions/ui';
+import '@sui-chrome-extensions/ui/styles';
 ```
 
 ### 新しい拡張機能の追加
@@ -103,4 +103,4 @@ import '@chrome-extension-template/ui/styles';
 - Manifest V3を使用
 - 各拡張機能の `vite.config.ts` で `defineManifest` を設定
 - ポップアップUIは各拡張機能の `index.html` から起動
-- 共通UIコンポーネントは `@chrome-extension-template/ui` から参照
+- 共通UIコンポーネントは `@sui-chrome-extensions/ui` から参照

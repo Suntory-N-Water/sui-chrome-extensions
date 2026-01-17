@@ -1,5 +1,15 @@
 # @sui-chrome-extensions/heavenly-reviews-collector
 
+## 0.3.0
+
+### Minor Changes
+
+- [#5](https://github.com/Suntory-N-Water/sui-chrome-extensions/pull/5) [`8108158`](https://github.com/Suntory-N-Water/sui-chrome-extensions/commit/810815815e76373e00dfa0f497e4ec06d64f4970) Thanks [@Suntory-N-Water](https://github.com/Suntory-N-Water)! - - 女の子名によるレビューフィルタリング機能を追加
+  - オール 5（満点）レビュー除外フィルタを追加
+  - アクティブフィルタ数のバッジ表示を追加
+  - フィルタクリア機能を追加
+  - CLAUDE.md、README.md、アイコン画像を追加
+
 ## 0.2.0
 
 ### Minor Changes

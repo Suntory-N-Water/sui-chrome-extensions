@@ -111,7 +111,7 @@ export default function ReviewCollector() {
   return (
     <Card className='w-100 border-0 shadow-none'>
       <CardHeader className='pb-4'>
-        <CardTitle className='text-lg'>Heavenly Reviews Collector</CardTitle>
+        <CardTitle className='text-lg'>H Reviews Collector</CardTitle>
       </CardHeader>
       <CardContent className='space-y-4'>
         <div className='space-y-2'>

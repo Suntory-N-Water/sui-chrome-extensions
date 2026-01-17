@@ -6,9 +6,9 @@ import { defineConfig } from 'vite';
 
 const manifest = defineManifest({
   manifest_version: 3,
-  name: 'Heavenly Reviews Collector',
+  name: 'H Reviews Collector',
   version: '0.0.0',
-  description: 'シティヘブンネットのレビューを収集する拡張機能',
+  description: 'レビューを収集する拡張機能',
   permissions: ['tabs', 'activeTab', 'storage', 'scripting'],
   host_permissions: ['https://www.cityheaven.net/*', 'http://localhost:5173/*'],
   action: {

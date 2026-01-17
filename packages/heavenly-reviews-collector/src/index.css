@@ -1,0 +1,79 @@
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+@theme {
+  /* Heavenly Theme Colors (Rose/Pink based) */
+  --color-background: oklch(0.98 0.01 340); /* Soft Rose White */
+  --color-foreground: oklch(0.2 0.05 340); /* Dark Rose Gray */
+
+  --color-primary: oklch(0.65 0.25 340); /* Vibrant Pink */
+  --color-primary-foreground: oklch(0.98 0 0); /* White */
+
+  --color-secondary: oklch(0.95 0.03 340); /* Pale Pink */
+  --color-secondary-foreground: oklch(0.4 0.1 340); /* Deep Pink */
+
+  --color-muted: oklch(0.96 0.01 340);
+  --color-muted-foreground: oklch(0.5 0.05 340);
+
+  --color-accent: oklch(0.9 0.05 340);
+  --color-accent-foreground: oklch(0.3 0.1 340);
+
+  --color-card: oklch(1 0 0 / 0.8);
+  --color-card-foreground: oklch(0.2 0.05 340);
+
+  --color-border: oklch(0.9 0.05 340);
+  --color-input: oklch(0.9 0.05 340);
+  --color-ring: oklch(0.65 0.25 340 / 0.5);
+
+  --color-chart-1: oklch(0.65 0.25 340);
+  --color-chart-2: oklch(0.6 0.2 300);
+  --color-chart-3: oklch(0.55 0.2 260);
+  --color-chart-4: oklch(0.7 0.15 30);
+  --color-chart-5: oklch(0.7 0.15 80);
+
+  /* Fonts */
+  --font-sans: "Outfit", "Noto Sans JP", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Custom Utilities */
+@utility glass-panel {
+  @apply backdrop-blur-md bg-white/40 border border-white/30 shadow-lg;
+}
+
+@utility glass-card {
+  @apply backdrop-blur-sm bg-white/60 border border-white/40 shadow-sm rounded-xl;
+}
+
+/* Global Styles */
+:root {
+  font-family: var(--font-sans);
+  background-image: 
+    linear-gradient(to bottom right, oklch(0.98 0.01 340), oklch(0.95 0.05 320));
+  background-attachment: fixed;
+  color: var(--color-foreground);
+  font-feature-settings: "palt";
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(0.8 0.05 340);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.7 0.1 340);
+}

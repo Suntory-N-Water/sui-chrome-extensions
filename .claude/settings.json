@@ -105,5 +105,8 @@
     "type": "command",
     "command": "node ~/.claude/scripts/statusline.js"
   },
-  "plansDirectory": ".claude/plans"
+  "plansDirectory": ".claude/plans",
+  "enabledPlugins": {
+    "dig@kuu-marketplace": true
+  }
 }

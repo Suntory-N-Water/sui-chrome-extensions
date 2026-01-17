@@ -10,6 +10,8 @@
   "dependencies": {
     "@sui-chrome-extensions/common": "workspace:*",
     "@sui-chrome-extensions/ui": "workspace:*",
+    "@tanstack/react-table": "^8.21.3",
+    "lucide-react": "^0.562.0",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

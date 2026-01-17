@@ -13,7 +13,7 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
   return (
     <aside className='w-64 h-screen fixed left-0 top-0 glass-panel border-r border-white/20 z-50 flex flex-col p-6'>
       <div className='mb-10'>
-        <h1 className='text-2xl font-bold bg-gradient-to-r from-primary to-secondary-foreground bg-clip-text text-transparent'>
+        <h1 className='text-2xl font-bold bg-linear-to-r from-primary to-secondary-foreground bg-clip-text text-transparent'>
           Heavenly
           <br />
           <span className='text-lg font-normal text-muted-foreground'>

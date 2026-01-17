@@ -31,7 +31,7 @@ export type CollectionState = {
     | 'error';
 
   // フェーズ1で取得する情報
-  totalReviewCount?: number;
+  expectedTotalReviews?: number;
   totalPageCount?: number;
 
   // フェーズ2で使用するタスクキュー
@@ -39,7 +39,7 @@ export type CollectionState = {
 
   // 収集済みレビュー
   reviews: ReviewData[];
-  totalReviews: number;
+  collectedReviewsCount: number;
 
   // 進捗情報
   currentPage: number;
@@ -65,4 +65,5 @@ export type MessageType =
       totalPages: number;
     }
   | { type: 'COLLECTION_PROGRESS'; state: CollectionState }
-  | { type: 'CLEAR_DATA' };
+  | { type: 'CLEAR_DATA' }
+  | { type: 'ERROR'; error: string };

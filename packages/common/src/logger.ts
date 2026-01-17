@@ -183,6 +183,14 @@ function formatTimestamp(iso: string): string {
   return datePart?.split('.')[0] ?? iso;
 }
 
+/**
+ * Resolves the current log level.
+ *
+ * Note: In a Chrome Extension environment, strict environment variables are not available.
+ * This checks `globalThis.LOG_LEVEL` which can be set during build time (DefinePlugin)
+ * or manually in the console for debugging.
+ * Default is 'info'.
+ */
 function resolveLogLevel(): string {
   const globalContext = globalThis as {
     LOG_LEVEL?: string;

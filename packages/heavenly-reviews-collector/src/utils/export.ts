@@ -31,7 +31,7 @@ export function exportToCsv(reviews: ReviewData[]): string {
       row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','),
     )
     .join('\n');
-  return csvContent;
+  return `\uFEFF${csvContent}`;
 }
 
 /**

@@ -1,3 +1,4 @@
+import { getLogger } from '@sui-chrome-extensions/common';
 import {
   Button,
   Card,
@@ -8,7 +9,6 @@ import {
   Progress,
 } from '@sui-chrome-extensions/ui';
 import { useEffect, useState } from 'react';
-import { DEFAULT_URL } from '../constants';
 import type { CollectionState, MessageType } from '../types';
 import { downloadFile } from '../utils/download';
 import { exportToCsv, exportToJson, exportToTsv } from '../utils/export';
@@ -16,13 +16,16 @@ import { exportToCsv, exportToJson, exportToTsv } from '../utils/export';
 const INITIAL_STATE: CollectionState = {
   status: 'idle',
   currentPage: 0,
-  totalReviews: 0,
+  expectedTotalReviews: 0,
+  collectedReviewsCount: 0,
   reviews: [],
   pageTasks: [],
 };
 
+const logger = getLogger('review-collector');
+
 export default function ReviewCollector() {
-  const [url, setUrl] = useState<string>(DEFAULT_URL);
+  const [url, setUrl] = useState<string>('');
   const [state, setState] = useState<CollectionState>(INITIAL_STATE);
 
   useEffect(() => {
@@ -30,6 +33,13 @@ export default function ReviewCollector() {
     chrome.runtime.sendMessage(
       { type: 'GET_STATE' } satisfies MessageType,
       (response) => {
+        if (chrome.runtime.lastError) {
+          logger.warn(
+            { error: chrome.runtime.lastError },
+            'Failed to get state',
+          );
+          return;
+        }
         if (response) {
           setState(response);
         }
@@ -141,16 +151,23 @@ export default function ReviewCollector() {
         {isCollecting && (
           <div className='space-y-2'>
             <div className='text-sm text-muted-foreground'>
-              進捗: {state.currentPage} ページ目 ({state.totalReviews}
+              進捗: {state.currentPage} ページ目 ({state.collectedReviewsCount}
               件収集済み)
             </div>
-            <Progress value={undefined} className='animate-pulse' />
+            <Progress
+              value={
+                state.totalPageCount && state.totalPageCount > 0
+                  ? (state.currentPage / state.totalPageCount) * 100
+                  : 0
+              }
+              className='animate-pulse'
+            />
           </div>
         )}
 
         {state.status === 'completed' && (
           <div className='text-sm text-green-600'>
-            収集完了: {state.totalReviews}件のレビューを取得しました
+            収集完了: {state.collectedReviewsCount}件のレビューを取得しました
           </div>
         )}
 
@@ -161,7 +178,7 @@ export default function ReviewCollector() {
         {hasReviews && (
           <div className='space-y-2'>
             <div className='text-sm font-medium'>
-              ダウンロード ({state.totalReviews}件)
+              ダウンロード ({state.collectedReviewsCount}件)
             </div>
             <div className='flex gap-2'>
               <Button

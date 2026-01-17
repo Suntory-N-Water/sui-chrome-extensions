@@ -18,10 +18,17 @@ export function buildPageUrls({
   for (let page = 2; page <= totalPages; page++) {
     const pageUrl = new URL(url);
     // /reviews/ → /reviews/2/
-    pageUrl.pathname = pageUrl.pathname.replace(
-      /\/reviews\//,
-      `/reviews/${page}/`,
-    );
+    // /reviews/ → /reviews/2/
+    // パスの末尾、またはクエリパラメータ直前の /reviews/ を厳密に置換
+    const pathname = pageUrl.pathname;
+    if (pathname.endsWith('/reviews/')) {
+      pageUrl.pathname = pathname.replace(/\/reviews\/$/, `/reviews/${page}/`);
+    } else {
+      pageUrl.pathname = pathname.replace(
+        /\/reviews\/([^/]*)$/,
+        `/reviews/${page}/$1`,
+      );
+    }
     urls.push(pageUrl.toString());
   }
 

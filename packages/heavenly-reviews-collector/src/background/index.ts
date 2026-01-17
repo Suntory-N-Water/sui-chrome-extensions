@@ -17,10 +17,14 @@ const logger = getLogger('background');
 // 各ページ読み込み後の待機時間（ミリ秒）
 const PAGE_DELAY_MS = 1 * 1000;
 
+// 処理中のタブIDを追跡（強制停止時のクリーンアップ用）
+let currentProcessingTabId: number | null = null;
+
 let state: CollectionState = {
   status: 'idle',
   currentPage: 0,
-  totalReviews: 0,
+  expectedTotalReviews: 0,
+  collectedReviewsCount: 0,
   reviews: [],
   pageTasks: [],
 };
@@ -50,12 +54,17 @@ async function extractReviewsFromTab(tabId: number): Promise<{
       message: { type: 'EXTRACT_REVIEWS' },
     });
 
+    if (response.type === 'ERROR') {
+      throw new Error(response.error);
+    }
+
     if (response.type === 'REVIEWS_EXTRACTED') {
       return {
         reviews: response.reviews,
         nextPageUrl: response.nextPageUrl,
       };
     }
+
     return { reviews: [], nextPageUrl: null };
   } catch (error) {
     logger.error({ tabId, error }, 'レビュー抽出失敗');
@@ -76,15 +85,19 @@ async function getPageInfoFromTab(tabId: number): Promise<{
     message: { type: 'GET_PAGE_INFO' },
   });
 
-  if (response.type !== 'PAGE_INFO_RESPONSE') {
-    throw new Error('ページ情報の取得に失敗しました');
+  if (response.type === 'PAGE_INFO_RESPONSE') {
+    return {
+      totalReviews: response.totalReviews,
+      reviewsPerPage: response.reviewsPerPage,
+      totalPages: response.totalPages,
+    };
   }
 
-  return {
-    totalReviews: response.totalReviews,
-    reviewsPerPage: response.reviewsPerPage,
-    totalPages: response.totalPages,
-  };
+  if (response.type === 'ERROR') {
+    throw new Error(response.error);
+  }
+
+  throw new Error('ページ情報の取得に失敗しました');
 }
 
 /**
@@ -180,7 +193,7 @@ async function collectPageUrls(startUrl: string): Promise<boolean> {
       status: 'idle',
     }));
 
-    state.totalReviewCount = pageInfo.totalReviews;
+    state.expectedTotalReviews = pageInfo.totalReviews;
     state.totalPageCount = pageInfo.totalPages;
     state.status = 'review_collecting';
 
@@ -230,6 +243,7 @@ async function processSinglePageTask(task: PageTask): Promise<void> {
     if (!tab.id) {
       throw new Error('タブIDが取得できません');
     }
+    currentProcessingTabId = tab.id;
 
     logger.debug({ tabId: tab.id }, 'タブ作成完了、ページ読み込み待機開始');
     await waitForPageLoad(tab.id);
@@ -239,7 +253,15 @@ async function processSinglePageTask(task: PageTask): Promise<void> {
 
     // レビューを追加
     state.reviews.push(...reviews);
-    state.totalReviews = state.reviews.length;
+    state.collectedReviewsCount = state.reviews.length;
+
+    // レビュー数が多くなってきた場合に警告を追加（メモリ使用量増加の懸念）
+    if (state.reviews.length > 5000 && state.reviews.length % 1000 === 0) {
+      logger.warn(
+        { count: state.reviews.length },
+        'Review count is becoming large, memory usage may increase',
+      );
+    }
 
     logger.info(
       {
@@ -267,8 +289,11 @@ async function processSinglePageTask(task: PageTask): Promise<void> {
     task.errorMessage = String(error);
   } finally {
     if (tab?.id) {
-      await chrome.tabs.remove(tab.id);
+      // 既に閉じられていてもエラーを無視するためのcatchは呼び出し元ではなくここで制御するか、
+      // remove自体は失敗しても続行する
+      await chrome.tabs.remove(tab.id).catch(() => {});
     }
+    currentProcessingTabId = null;
   }
 
   await saveStateToStorage(state);
@@ -325,6 +350,17 @@ async function startCollectionWorkflow(startUrl: string): Promise<void> {
 async function stopCollection(): Promise<void> {
   shouldStop = true;
   state.status = 'idle';
+
+  // 処理中のタブがあれば強制的に閉じる
+  if (currentProcessingTabId) {
+    try {
+      await chrome.tabs.remove(currentProcessingTabId);
+    } catch {
+      // 既に閉じられていても無視
+    }
+    currentProcessingTabId = null;
+  }
+
   await saveStateToStorage(state);
   await sendProgressToPopup();
 }
@@ -348,6 +384,10 @@ chrome.runtime.onMessage.addListener(
             state = savedState;
           }
         })
+        .catch((error) => {
+          logger.error({ error }, 'Failed to load state in GET_STATE');
+          // エラー時は初期状態などを維持、必要に応じてリセット処理
+        })
         .finally(() => {
           sendResponse(state);
         });
@@ -356,7 +396,8 @@ chrome.runtime.onMessage.addListener(
       state = {
         status: 'idle',
         currentPage: 0,
-        totalReviews: 0,
+        expectedTotalReviews: 0,
+        collectedReviewsCount: 0,
         reviews: [],
         pageTasks: [],
       };

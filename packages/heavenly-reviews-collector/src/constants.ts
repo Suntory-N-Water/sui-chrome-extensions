@@ -12,6 +12,3 @@ export const REVIEW_HEADERS = [
   '本文',
   '掲載日',
 ] as const;
-
-export const DEFAULT_URL =
-  'https://www.cityheaven.net/tokyo/A1311/A131101/otome/reviews/?girlid=47977232&lo=1';

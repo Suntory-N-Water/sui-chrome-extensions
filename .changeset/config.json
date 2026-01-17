@@ -3,7 +3,7 @@
   "changelog": [
     "@changesets/changelog-github",
     {
-      "repo": "Suntory-N-Water/chrome-extension-vite-template"
+      "repo": "Suntory-N-Water/sui-chrome-extensions"
     }
   ],
   "commit": false,

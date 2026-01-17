@@ -100,6 +100,12 @@
       "linter": {
         "enabled": false
       }
+    },
+    {
+      "includes": ["packages/common/src/logger.ts"],
+      "linter": {
+        "enabled": false
+      }
     }
   ]
 }

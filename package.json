@@ -1,5 +1,5 @@
 {
-  "name": "chrome-extension-vite-template",
+  "name": "sui-chrome-extensions",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,7 +7,7 @@
   "author": "sui",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Suntory-N-Water/chrome-extension-vite-template.git"
+    "url": "git+https://github.com/Suntory-N-Water/sui-chrome-extensions.git"
   },
   "license": "MIT",
   "engines": {
@@ -15,9 +15,9 @@
     "pnpm": ">=10.0.0"
   },
   "bugs": {
-    "url": "https://github.com/Suntory-N-Water/chrome-extension-vite-template/issues"
+    "url": "https://github.com/Suntory-N-Water/sui-chrome-extensions/issues"
   },
-  "homepage": "https://github.com/Suntory-N-Water/chrome-extension-vite-template#readme",
+  "homepage": "https://github.com/Suntory-N-Water/sui-chrome-extensions#readme",
   "keywords": [
     "chrome-extension",
     "vite",
@@ -29,7 +29,9 @@
   ],
   "scripts": {
     "dev:example": "pnpm --filter example-extension dev",
+    "dev:heavenly": "pnpm --filter @sui-chrome-extensions/heavenly-reviews-collector dev",
     "build:example": "pnpm --filter example-extension build",
+    "build:heavenly": "pnpm --filter @sui-chrome-extensions/heavenly-reviews-collector build",
     "build:all": "pnpm -r --parallel build",
     "changeset": "changeset",
     "version": "changeset version && pnpm run sync-manifest",

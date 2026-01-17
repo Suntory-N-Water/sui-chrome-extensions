@@ -26,10 +26,10 @@ async function createZipReleases() {
   for (const tag of tags) {
     console.log(`\n📦 Processing tag: ${tag}`);
 
-    // @chrome-extension-template/example-extension@0.0.1 形式を解析
+    // @sui-chrome-extensions/example-extension@0.0.1 形式を解析
     // スコープ付きパッケージ名に対応するため、最後の @ で分割
     const lastAtIndex = tag.lastIndexOf('@');
-    const fullPackageName = tag.slice(0, lastAtIndex); // @chrome-extension-template/example-extension
+    const fullPackageName = tag.slice(0, lastAtIndex); // @sui-chrome-extensions/example-extension
     const version = tag.slice(lastAtIndex + 1); // 0.0.1
 
     // ディレクトリ名を抽出 (example-extension)

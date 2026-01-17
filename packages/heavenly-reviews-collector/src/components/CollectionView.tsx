@@ -1,12 +1,6 @@
 import { getLogger } from '@sui-chrome-extensions/common';
 import { Button, Input, Progress } from '@sui-chrome-extensions/ui';
-import {
-  AlertCircle,
-  CheckCircle2,
-  Link,
-  Play,
-  StopCircle,
-} from 'lucide-react';
+import { AlertCircle, Link, Play, StopCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { CollectionState, MessageType } from '../types';
 
@@ -142,15 +136,6 @@ export default function CollectionView() {
               <p className='text-xs text-muted-foreground text-right'>
                 Page {state.currentPage} / {state.totalPageCount || '?'}
               </p>
-            </div>
-          )}
-
-          {state.status === 'completed' && (
-            <div className='flex items-center gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-700 animate-in fade-in'>
-              <CheckCircle2 size={20} />
-              <span className='font-medium'>
-                収集完了しました！ダッシュボードへ移動します...
-              </span>
             </div>
           )}
 

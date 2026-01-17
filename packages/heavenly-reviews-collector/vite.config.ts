@@ -11,6 +11,11 @@ const manifest = defineManifest({
   description: 'レビューを収集する拡張機能',
   permissions: ['tabs', 'activeTab', 'storage', 'scripting'],
   host_permissions: ['https://www.cityheaven.net/*', 'http://localhost:5173/*'],
+  icons: {
+    '16': 'icons/icon-16.png',
+    '48': 'icons/icon-48.png',
+    '128': 'icons/icon-128.png',
+  },
   action: {
     default_popup: 'index.html',
   },

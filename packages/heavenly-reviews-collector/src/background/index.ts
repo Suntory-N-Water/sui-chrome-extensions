@@ -1,4 +1,5 @@
 import { getLogger } from '@sui-chrome-extensions/common';
+import retry from 'async-retry';
 import { notifyPopup, sendMessageToContent } from '../services/messaging';
 import {
   loadState as loadStateFromStorage,
@@ -16,6 +17,10 @@ const logger = getLogger('background');
 
 // 各ページ読み込み後の待機時間（ミリ秒）
 const PAGE_DELAY_MS = 1 * 1000;
+
+// リトライ設定
+const MAX_RETRIES = 3; // 初回 + 2回のリトライ
+const RETRY_DELAY_MS = 2 * 1000; // 2秒
 
 // 処理中のタブIDを追跡（強制停止時のクリーンアップ用）
 let currentProcessingTabId: number | null = null;
@@ -145,9 +150,6 @@ async function waitForPageLoad(tabId: number): Promise<void> {
 
 /**
  * 最初のページから総ページ数を取得し、全ページのURLリストを生成してストレージに保存する
- *
- * @param startUrl - 収集を開始するURL
- * @returns 成功した場合true、失敗した場合false
  */
 async function collectPageUrls(startUrl: string): Promise<boolean> {
   logger.info({ startUrl }, 'URL収集を開始');
@@ -159,51 +161,118 @@ async function collectPageUrls(startUrl: string): Promise<boolean> {
   let tab: chrome.tabs.Tab | undefined;
 
   try {
-    // タブを開いて最初のページにアクセス
-    tab = await chrome.tabs.create({ url: startUrl, active: false });
-    if (!tab.id) {
-      throw new Error('タブIDが取得できません');
-    }
+    // async-retryでラップ
+    await retry(
+      async (bail, attemptNumber) => {
+        logger.debug({ attempt: attemptNumber }, 'URL収集試行開始');
 
-    logger.debug({ tabId: tab.id }, 'タブ作成完了、ページ読み込み待機開始');
-    await waitForPageLoad(tab.id);
+        try {
+          // タブ作成（初回）またはリロード（2回目以降）
+          if (attemptNumber === 1) {
+            tab = await chrome.tabs.create({ url: startUrl, active: false });
+            if (!tab.id) {
+              throw new Error('タブIDが取得できません');
+            }
+          } else {
+            // リトライ時はタブをリロード
+            if (!tab?.id) {
+              throw new Error('リトライ時にタブIDが存在しません');
+            }
+            logger.debug({ tabId: tab.id }, 'タブをリロード');
+            await chrome.tabs.reload(tab.id);
+          }
 
-    // ページ情報を取得
-    logger.debug({ tabId: tab.id }, 'ページ情報取得開始');
-    const pageInfo = await getPageInfoFromTab(tab.id);
-    logger.info(
-      {
-        totalReviews: pageInfo.totalReviews,
-        totalPages: pageInfo.totalPages,
+          logger.debug(
+            { tabId: tab.id },
+            'タブ作成完了、ページ読み込み待機開始',
+          );
+          await waitForPageLoad(tab.id);
+
+          // ページ情報を取得
+          logger.debug({ tabId: tab.id }, 'ページ情報取得開始');
+          const pageInfo = await getPageInfoFromTab(tab.id);
+          logger.info(
+            {
+              totalReviews: pageInfo.totalReviews,
+              totalPages: pageInfo.totalPages,
+              attempt: attemptNumber,
+            },
+            'ページ情報を取得',
+          );
+
+          // URLリストを生成
+          const urls = buildPageUrls({
+            baseUrl: startUrl,
+            totalPages: pageInfo.totalPages,
+          });
+          logger.debug({ urlCount: urls.length }, 'URL生成完了');
+
+          // PageTasksを初期化
+          state.pageTasks = urls.map((url, index) => ({
+            url,
+            pageNumber: index + 1,
+            status: 'idle',
+          }));
+
+          state.expectedTotalReviews = pageInfo.totalReviews;
+          state.totalPageCount = pageInfo.totalPages;
+          state.status = 'review_collecting';
+
+          await saveStateToStorage(state);
+          await sendProgressToPopup();
+
+          logger.info('URL収集完了、レビュー収集フェーズへ移行');
+        } catch (error) {
+          // リトライ可能なエラーかチェック
+          const errorMessage = String(error);
+          const isRetryableError =
+            errorMessage.includes('timeout') ||
+            errorMessage.includes('Page load timeout') ||
+            errorMessage.includes('タブIDが取得できません') ||
+            errorMessage.includes('ページ情報の取得に失敗しました');
+
+          if (isRetryableError) {
+            logger.warn(
+              {
+                attempt: attemptNumber,
+                error: errorMessage,
+              },
+              'リトライ可能なエラーが発生',
+            );
+            throw error; // リトライを続行
+          }
+
+          // リトライ不可能なエラーの場合は即座に失敗
+          logger.error(
+            {
+              error: errorMessage,
+            },
+            'リトライ不可能なエラー、処理を中断',
+          );
+          bail(error); // リトライを中断
+          return; // TypeScript型チェックのため
+        }
       },
-      'ページ情報を取得',
+      {
+        retries: MAX_RETRIES - 1, // 初回 + 2回のリトライ = 合計3回
+        minTimeout: RETRY_DELAY_MS,
+        maxTimeout: RETRY_DELAY_MS,
+        onRetry: (error, attempt) => {
+          logger.info(
+            {
+              attempt,
+              maxRetries: MAX_RETRIES,
+              error: String(error),
+            },
+            'URL収集リトライ実行中',
+          );
+        },
+      },
     );
 
-    // URLリストを生成
-    const urls = buildPageUrls({
-      baseUrl: startUrl,
-      totalPages: pageInfo.totalPages,
-    });
-    logger.debug({ urlCount: urls.length }, 'URL生成完了');
-
-    // PageTasksを初期化
-    state.pageTasks = urls.map((url, index) => ({
-      url,
-      pageNumber: index + 1,
-      status: 'idle',
-    }));
-
-    state.expectedTotalReviews = pageInfo.totalReviews;
-    state.totalPageCount = pageInfo.totalPages;
-    state.status = 'review_collecting';
-
-    await saveStateToStorage(state);
-    await sendProgressToPopup();
-
-    logger.info('URL収集完了、レビュー収集フェーズへ移行');
     return true;
   } catch (error) {
-    logger.error({ error }, 'URL収集エラー');
+    logger.error({ error }, 'URL収集エラー（最大リトライ回数到達）');
     state.status = 'error';
     state.error = `URL収集エラー: ${error}`;
     await saveStateToStorage(state);
@@ -211,15 +280,13 @@ async function collectPageUrls(startUrl: string): Promise<boolean> {
     return false;
   } finally {
     if (tab?.id) {
-      await chrome.tabs.remove(tab.id);
+      await chrome.tabs.remove(tab.id).catch(() => {});
     }
   }
 }
 
 /**
  * 単一ページのタスクを処理し、レビューを抽出してstateに追加する
- *
- * @param task - 処理対象のPageTask（statusが更新される）
  */
 async function processSinglePageTask(task: PageTask): Promise<void> {
   logger.info(
@@ -238,59 +305,120 @@ async function processSinglePageTask(task: PageTask): Promise<void> {
   let tab: chrome.tabs.Tab | undefined;
 
   try {
-    // タブを開いてレビュー抽出
-    tab = await chrome.tabs.create({ url: task.url, active: false });
-    if (!tab.id) {
-      throw new Error('タブIDが取得できません');
-    }
-    currentProcessingTabId = tab.id;
+    // async-retryでラップ
+    await retry(
+      async (bail, attemptNumber) => {
+        logger.debug(
+          { pageNumber: task.pageNumber, attempt: attemptNumber },
+          'ページ処理試行開始',
+        );
 
-    logger.debug({ tabId: tab.id }, 'タブ作成完了、ページ読み込み待機開始');
-    await waitForPageLoad(tab.id);
+        try {
+          // タブ作成（初回）またはリロード（2回目以降）
+          if (attemptNumber === 1) {
+            tab = await chrome.tabs.create({ url: task.url, active: false });
+            if (!tab.id) {
+              throw new Error('タブIDが取得できません');
+            }
+            currentProcessingTabId = tab.id;
+          } else {
+            // リトライ時はタブをリロード
+            if (!tab?.id) {
+              throw new Error('リトライ時にタブIDが存在しません');
+            }
+            logger.debug({ tabId: tab.id }, 'タブをリロード');
+            await chrome.tabs.reload(tab.id);
+          }
 
-    logger.debug({ tabId: tab.id }, 'レビュー抽出開始');
-    const { reviews } = await extractReviewsFromTab(tab.id);
+          logger.debug(
+            { tabId: tab.id },
+            'タブ作成完了、ページ読み込み待機開始',
+          );
+          await waitForPageLoad(tab.id);
 
-    // レビューを追加
-    state.reviews.push(...reviews);
-    state.collectedReviewsCount = state.reviews.length;
+          logger.debug({ tabId: tab.id }, 'レビュー抽出開始');
+          const { reviews } = await extractReviewsFromTab(tab.id);
 
-    // レビュー数が多くなってきた場合に警告を追加（メモリ使用量増加の懸念）
-    if (state.reviews.length > 5000 && state.reviews.length % 1000 === 0) {
-      logger.warn(
-        { count: state.reviews.length },
-        'Review count is becoming large, memory usage may increase',
-      );
-    }
+          // レビューを追加
+          state.reviews.push(...reviews);
+          state.collectedReviewsCount = state.reviews.length;
 
-    logger.info(
-      {
-        pageNumber: task.pageNumber,
-        reviewCount: reviews.length,
-        totalReviews: state.reviews.length,
+          logger.info(
+            {
+              pageNumber: task.pageNumber,
+              reviewCount: reviews.length,
+              totalReviews: state.reviews.length,
+              attempt: attemptNumber,
+            },
+            'レビュー抽出完了',
+          );
+
+          // タスクを完了にマーク
+          task.status = 'completed';
+
+          // サーバー負荷軽減のため待機
+          await new Promise((resolve) => setTimeout(resolve, PAGE_DELAY_MS));
+        } catch (error) {
+          // リトライ可能なエラーかチェック
+          const errorMessage = String(error);
+          const isRetryableError =
+            errorMessage.includes('timeout') ||
+            errorMessage.includes('Page load timeout') ||
+            errorMessage.includes('タブIDが取得できません');
+
+          if (isRetryableError) {
+            logger.warn(
+              {
+                pageNumber: task.pageNumber,
+                attempt: attemptNumber,
+                error: errorMessage,
+              },
+              'リトライ可能なエラーが発生',
+            );
+            throw error; // リトライを続行
+          }
+
+          // リトライ不可能なエラーの場合は即座に失敗
+          logger.error(
+            {
+              pageNumber: task.pageNumber,
+              error: errorMessage,
+            },
+            'リトライ不可能なエラー、処理を中断',
+          );
+          bail(error); // リトライを中断
+          return; // TypeScript型チェックのため
+        }
       },
-      'レビュー抽出完了',
+      {
+        retries: MAX_RETRIES - 1, // 初回 + 2回のリトライ = 合計3回
+        minTimeout: RETRY_DELAY_MS,
+        maxTimeout: RETRY_DELAY_MS,
+        onRetry: (error, attempt) => {
+          logger.info(
+            {
+              pageNumber: task.pageNumber,
+              attempt,
+              maxRetries: MAX_RETRIES,
+              error: String(error),
+            },
+            'リトライ実行中',
+          );
+        },
+      },
     );
-
-    // タスクを完了にマーク
-    task.status = 'completed';
-
-    // サーバー負荷軽減のため待機
-    await new Promise((resolve) => setTimeout(resolve, PAGE_DELAY_MS));
   } catch (error) {
     logger.error(
       {
         pageNumber: task.pageNumber,
         error,
       },
-      'ページ処理エラー',
+      'ページ処理エラー（最大リトライ回数到達）',
     );
     task.status = 'error';
     task.errorMessage = String(error);
   } finally {
     if (tab?.id) {
-      // 既に閉じられていてもエラーを無視するためのcatchは呼び出し元ではなくここで制御するか、
-      // remove自体は失敗しても続行する
       await chrome.tabs.remove(tab.id).catch(() => {});
     }
     currentProcessingTabId = null;

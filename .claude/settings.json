@@ -32,7 +32,8 @@
       "Skill(dev:actions-check)",
       "Bash(pinact run:*)",
       "Bash(ghalint run:*)",
-      "Bash(zizmor:*)"
+      "Bash(zizmor:*)",
+      "Bash(agent-browser :*)"
     ],
     "deny": [
       "Bash(rm -rf:*)",
@@ -103,5 +104,6 @@
   "statusLine": {
     "type": "command",
     "command": "node ~/.claude/scripts/statusline.js"
-  }
+  },
+  "plansDirectory": ".claude/plans"
 }

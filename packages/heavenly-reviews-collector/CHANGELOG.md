@@ -1,5 +1,16 @@
 # @sui-chrome-extensions/heavenly-reviews-collector
 
+## 0.3.1
+
+### Patch Changes
+
+- [#7](https://github.com/Suntory-N-Water/sui-chrome-extensions/pull/7) [`0ba3339`](https://github.com/Suntory-N-Water/sui-chrome-extensions/commit/0ba3339001a5685f377c884ad3ec6361a545a515) Thanks [@Suntory-N-Water](https://github.com/Suntory-N-Water)! - バックグラウンド処理のリトライ機能と UI 改善を追加
+
+  - async-retry パッケージを追加し、URL 収集とレビュー抽出処理にリトライロジックを実装（最大 3 回試行、2 秒間隔）
+  - タイムアウトやタブ ID エラーなどの一時的なエラーに対してリトライを実行
+  - ReviewsDashboard に写真スコアの平均表示を追加
+  - OptionsPage のレイアウトを調整（flexbox の改善）
+
 ## 0.3.0
 
 ### Minor Changes

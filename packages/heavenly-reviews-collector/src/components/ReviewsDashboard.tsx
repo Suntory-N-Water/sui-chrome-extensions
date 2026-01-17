@@ -1,8 +1,22 @@
-import { Button, DataTable } from '@sui-chrome-extensions/ui';
+import {
+  Badge,
+  Button,
+  DataTable,
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@sui-chrome-extensions/ui';
 import {
   FileJson,
   FileSpreadsheet,
   FileType,
+  Filter,
   RotateCcw,
   Trash2,
 } from 'lucide-react';
@@ -10,6 +24,7 @@ import { useMemo, useState } from 'react';
 import type { CollectionState, MessageType, ReviewData } from '../types';
 import { downloadFile } from '../utils/download';
 import { exportToCsv, exportToJson, exportToTsv } from '../utils/export';
+import { getUniqueGirlNames, isPerfectScore } from '../utils/reviewFilter';
 import ReviewDetailDialog from './ReviewDetailDialog';
 import { reviewColumns } from './reviewColumns';
 
@@ -24,33 +39,80 @@ export default function ReviewsDashboard({
 }: ReviewsDashboardProps) {
   const [selectedReview, setSelectedReview] = useState<ReviewData | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [excludePerfectScores, setExcludePerfectScores] = useState(false);
+  const [selectedGirlName, setSelectedGirlName] = useState<string>('all');
+
+  // 女の子のリストを取得
+  const girlNames = useMemo(() => getUniqueGirlNames(reviews), [reviews]);
+
+  // フィルタリング処理
+  const filteredReviews = useMemo(() => {
+    let filtered = reviews;
+
+    // 女の子でフィルタ
+    if (selectedGirlName !== 'all') {
+      filtered = filtered.filter(
+        (review) => review.girlName === selectedGirlName,
+      );
+    }
+
+    // オール5でフィルタ
+    if (excludePerfectScores) {
+      filtered = filtered.filter((review) => !isPerfectScore(review));
+    }
+
+    return filtered;
+  }, [reviews, selectedGirlName, excludePerfectScores]);
+
+  // アクティブなフィルタ数の計算
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+
+    // 女の子フィルタがアクティブ（'all' 以外が選択されている）
+    if (selectedGirlName !== 'all') {
+      count++;
+    }
+
+    // オール5除外フィルタがアクティブ
+    if (excludePerfectScores) {
+      count++;
+    }
+
+    return count;
+  }, [selectedGirlName, excludePerfectScores]);
 
   // 統計データの計算
   const stats = useMemo(() => {
-    if (reviews.length === 0) {
+    if (filteredReviews.length === 0) {
       return null;
     }
 
     const totalScoreAvg =
-      reviews.reduce((acc, r) => acc + r.totalScore, 0) / reviews.length;
+      filteredReviews.reduce((acc, r) => acc + r.totalScore, 0) /
+      filteredReviews.length;
     const girlScoreAvg =
-      reviews.reduce((acc, r) => acc + Number(r.scores.girl || 0), 0) /
-      reviews.length;
+      filteredReviews.reduce((acc, r) => acc + Number(r.scores.girl || 0), 0) /
+      filteredReviews.length;
     const playScoreAvg =
-      reviews.reduce((acc, r) => acc + Number(r.scores.play || 0), 0) /
-      reviews.length;
+      filteredReviews.reduce((acc, r) => acc + Number(r.scores.play || 0), 0) /
+      filteredReviews.length;
 
     return {
-      count: reviews.length,
+      count: filteredReviews.length,
       totalScore: totalScoreAvg.toFixed(2),
       girlScore: girlScoreAvg.toFixed(2),
       playScore: playScoreAvg.toFixed(2),
     };
-  }, [reviews]);
+  }, [filteredReviews]);
 
   const handleRowClick = (review: ReviewData) => {
     setSelectedReview(review);
     setIsDialogOpen(true);
+  };
+
+  const handleClearFilters = () => {
+    setSelectedGirlName('all');
+    setExcludePerfectScores(false);
   };
 
   const handleDownload = (format: 'csv' | 'tsv' | 'json') => {
@@ -59,15 +121,15 @@ export default function ReviewsDashboard({
     let mimeType = '';
 
     if (format === 'csv') {
-      content = exportToCsv(reviews);
+      content = exportToCsv(filteredReviews);
       filename = 'reviews.csv';
       mimeType = 'text/csv;charset=utf-8';
     } else if (format === 'tsv') {
-      content = exportToTsv(reviews);
+      content = exportToTsv(filteredReviews);
       filename = 'reviews.tsv';
       mimeType = 'text/tab-separated-values;charset=utf-8';
     } else {
-      content = exportToJson(reviews);
+      content = exportToJson(filteredReviews);
       filename = 'reviews.json';
       mimeType = 'application/json;charset=utf-8';
     }
@@ -88,6 +150,72 @@ export default function ReviewsDashboard({
 
   return (
     <div className='space-y-6'>
+      {/* Filter Controls */}
+      <div className='mb-4 flex items-center gap-2'>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant='outline' size='sm'>
+              <Filter className='h-4 w-4 mr-2' />
+              フィルタ
+              {activeFilterCount > 0 && (
+                <Badge variant='secondary' className='ml-2 h-5 px-1.5 text-xs'>
+                  {activeFilterCount}
+                </Badge>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className='w-80' align='start'>
+            {/* 女の子選択（ラジオボタン） */}
+            <DropdownMenuLabel>女の子で絞込</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+
+            <DropdownMenuRadioGroup
+              value={selectedGirlName}
+              onValueChange={setSelectedGirlName}
+            >
+              <DropdownMenuRadioItem value='all'>すべて</DropdownMenuRadioItem>
+
+              <div className='max-h-60 overflow-y-auto'>
+                {girlNames.map((name) => (
+                  <DropdownMenuRadioItem key={name} value={name}>
+                    {name}
+                  </DropdownMenuRadioItem>
+                ))}
+              </div>
+            </DropdownMenuRadioGroup>
+
+            <DropdownMenuSeparator />
+
+            {/* オール5除外（チェックボックス） */}
+            <DropdownMenuLabel>その他のフィルタ</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+
+            <DropdownMenuCheckboxItem
+              checked={excludePerfectScores}
+              onCheckedChange={setExcludePerfectScores}
+            >
+              オール5のレビューを除外
+            </DropdownMenuCheckboxItem>
+
+            {activeFilterCount > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={handleClearFilters}>
+                  フィルタをクリア
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* フィルタ適用状態の表示 */}
+        {activeFilterCount > 0 && (
+          <span className='text-sm text-muted-foreground'>
+            {filteredReviews.length}件のレビューを表示中
+          </span>
+        )}
+      </div>
+
       {/* Summary Cards */}
       {stats && (
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8'>
@@ -171,7 +299,7 @@ export default function ReviewsDashboard({
         <div className='p-1'>
           <DataTable
             columns={reviewColumns}
-            data={reviews}
+            data={filteredReviews}
             searchKey='body'
             placeholder='レビュー本文を検索...'
             onRowClick={handleRowClick}

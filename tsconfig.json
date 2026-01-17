@@ -2,6 +2,6 @@
   "files": [],
   "references": [
     { "path": "./packages/ui" },
-    { "path": "./packages/example-extension" }
+    { "path": "./packages/heavenly-reviews-collector" }
   ]
 }

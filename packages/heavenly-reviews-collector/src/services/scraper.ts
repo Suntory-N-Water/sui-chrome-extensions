@@ -37,12 +37,13 @@ export function extractReviews(): ReviewData[] {
       totalRateEl?.textContent?.trim() ?? '0',
     );
 
+    // 最低点が1点のため、初期値を1に設定
     const scores = {
-      girl: 0,
-      play: 0,
-      price: 0,
-      staff: 0,
-      photo: 0,
+      girl: 1,
+      play: 1,
+      price: 1,
+      staff: 1,
+      photo: 1,
     };
 
     const rateItems = item.querySelectorAll(SELECTORS.REVIEW_ITEM_RATE);

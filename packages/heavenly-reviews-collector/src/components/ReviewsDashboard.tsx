@@ -96,12 +96,16 @@ export default function ReviewsDashboard({
     const playScoreAvg =
       filteredReviews.reduce((acc, r) => acc + Number(r.scores.play || 0), 0) /
       filteredReviews.length;
+    const photoScoreAvg =
+      filteredReviews.reduce((acc, r) => acc + Number(r.scores.photo || 0), 0) /
+      filteredReviews.length;
 
     return {
       count: filteredReviews.length,
       totalScore: totalScoreAvg.toFixed(2),
       girlScore: girlScoreAvg.toFixed(2),
       playScore: playScoreAvg.toFixed(2),
+      photoScore: photoScoreAvg.toFixed(2),
     };
   }, [filteredReviews]);
 
@@ -218,7 +222,7 @@ export default function ReviewsDashboard({
 
       {/* Summary Cards */}
       {stats && (
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8'>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8'>
           <div className='glass-card p-6 animate-in zoom-in-50 duration-300 delay-0'>
             <p className='text-sm text-muted-foreground font-medium'>
               Total Reviews
@@ -249,6 +253,14 @@ export default function ReviewsDashboard({
             </p>
             <p className='text-3xl font-bold text-purple-500 mt-2'>
               {stats.playScore}
+            </p>
+          </div>
+          <div className='glass-card p-6 animate-in zoom-in-50 duration-300 delay-250'>
+            <p className='text-sm text-muted-foreground font-medium'>
+              Avg Photo Score
+            </p>
+            <p className='text-3xl font-bold text-blue-500 mt-2'>
+              {stats.photoScore}
             </p>
           </div>
         </div>

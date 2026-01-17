@@ -34,10 +34,10 @@ export default function OptionsPage() {
   }, []);
 
   return (
-    <div className='flex min-h-screen bg-background text-foreground transition-colors duration-300'>
+    <div className='min-h-screen bg-background text-foreground transition-colors duration-300'>
       <Sidebar currentView={view} onViewChange={setView} />
 
-      <main className='flex-1 ml-64 p-8 overflow-y-auto h-screen scroll-smooth'>
+      <main className='min-h-screen ml-64 p-8'>
         <div className='max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500'>
           <header className='mb-8'>
             <h2 className='text-3xl font-bold text-foreground'>

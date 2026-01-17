@@ -29,7 +29,9 @@
   ],
   "scripts": {
     "dev:example": "pnpm --filter example-extension dev",
+    "dev:heavenly": "pnpm --filter @sui-chrome-extensions/heavenly-reviews-collector dev",
     "build:example": "pnpm --filter example-extension build",
+    "build:heavenly": "pnpm --filter @sui-chrome-extensions/heavenly-reviews-collector build",
     "build:all": "pnpm -r --parallel build",
     "changeset": "changeset",
     "version": "changeset version && pnpm run sync-manifest",

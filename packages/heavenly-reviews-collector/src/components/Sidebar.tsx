@@ -1,11 +1,13 @@
+import { Button } from '@sui-chrome-extensions/ui';
 import { Download, LayoutDashboard } from 'lucide-react';
+import packageJson from '../../package.json';
 
 type ViewType = 'collection' | 'dashboard';
 
-interface SidebarProps {
+type SidebarProps = {
   currentView: ViewType;
   onViewChange: (view: ViewType) => void;
-}
+};
 
 export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
   return (
@@ -21,41 +23,43 @@ export default function Sidebar({ currentView, onViewChange }: SidebarProps) {
       </div>
 
       <nav className='flex flex-col gap-2'>
-        <button
+        <Button
+          variant='ghost'
           onClick={() => onViewChange('collection')}
           className={`
-            flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300
+            w-full justify-start h-auto px-4 py-3 text-sm font-medium transition-all duration-300
             ${
               currentView === 'collection'
-                ? 'bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20'
+                ? 'bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20 hover:bg-primary/15 hover:text-primary'
                 : 'text-muted-foreground hover:bg-white/40 hover:text-foreground hover:translate-x-1'
             }
           `}
         >
-          <Download size={20} />
+          <Download size={20} className='mr-3' />
           <span>収集開始</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
+          variant='ghost'
           onClick={() => onViewChange('dashboard')}
           className={`
-            flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300
+            w-full justify-start h-auto px-4 py-3 text-sm font-medium transition-all duration-300
             ${
               currentView === 'dashboard'
-                ? 'bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20'
+                ? 'bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20 hover:bg-primary/15 hover:text-primary'
                 : 'text-muted-foreground hover:bg-white/40 hover:text-foreground hover:translate-x-1'
             }
           `}
         >
-          <LayoutDashboard size={20} />
+          <LayoutDashboard size={20} className='mr-3' />
           <span>ダッシュボード</span>
-        </button>
+        </Button>
       </nav>
 
       <div className='mt-auto'>
         <div className='p-4 rounded-xl bg-white/30 border border-white/20 text-xs text-muted-foreground backdrop-blur-sm'>
           <p className='font-semibold mb-1'>Heavenly Collector</p>
-          <p>v0.1.0</p>
+          <p>v{packageJson.version}</p>
         </div>
       </div>
     </aside>

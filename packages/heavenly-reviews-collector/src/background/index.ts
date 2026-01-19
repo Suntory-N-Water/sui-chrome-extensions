@@ -136,12 +136,11 @@ async function waitForPageLoad(tabId: number): Promise<void> {
 
     chrome.tabs.onUpdated.addListener(listener);
 
-    // タイムアウト処理（30秒）
     setTimeout(() => {
       if (!resolved) {
         resolved = true;
         cleanup();
-        logger.error('ページ読み込みタイムアウト');
+        logger.warn('ページ読み込みタイムアウト');
         reject(new Error('Page load timeout'));
       }
     }, 30 * 1000);
@@ -161,7 +160,6 @@ async function collectPageUrls(startUrl: string): Promise<boolean> {
   let tab: chrome.tabs.Tab | undefined;
 
   try {
-    // async-retryでラップ
     await retry(
       async (bail, attemptNumber) => {
         logger.debug({ attempt: attemptNumber }, 'URL収集試行開始');

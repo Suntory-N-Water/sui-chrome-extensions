@@ -89,6 +89,23 @@ async function waitForPageLoad(tabId: number): Promise<void> {
 async function collectMembers(tabId: number): Promise<string[]> {
   logger.info('メンバー収集を開始');
 
+  // リストページかどうか確認
+  const checkResponse = await sendToContentScript<
+    { type: 'CHECK_LIST_PAGE' },
+    MessageType
+  >(tabId, {
+    type: 'CHECK_LIST_PAGE',
+  });
+
+  if (
+    checkResponse.type === 'LIST_PAGE_CHECK_RESULT' &&
+    !checkResponse.isListPage
+  ) {
+    throw new Error(
+      'リストメンバーページ（/i/lists/[list_id]/members）で実行してください',
+    );
+  }
+
   state.status = 'collecting';
   await saveState(state);
   notifyProgress();

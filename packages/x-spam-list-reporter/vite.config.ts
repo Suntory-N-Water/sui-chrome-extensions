@@ -11,6 +11,12 @@ const manifest = defineManifest({
   description: 'リストのメンバーを一括スパム報告するツール',
   permissions: ['tabs', 'activeTab', 'storage', 'scripting'],
   host_permissions: ['https://x.com/*', 'http://localhost:5173/*'],
+  icons: {
+    '16': 'icons/icon-16.png',
+    '32': 'icons/icon-32.png',
+    '48': 'icons/icon-48.png',
+    '128': 'icons/icon-128.png',
+  },
   action: {
     default_popup: 'index.html',
   },

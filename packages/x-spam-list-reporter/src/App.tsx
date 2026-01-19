@@ -151,7 +151,10 @@ export default function App() {
         {!isListPage && state.status === 'idle' && (
           <div className='p-3 bg-yellow-50 border border-yellow-200 rounded-md'>
             <p className='text-sm text-yellow-800'>
-              Xのリストページ（/lists/）で開いてください
+              Xのリストメンバーページで開いてください
+            </p>
+            <p className='text-xs text-yellow-700 mt-1'>
+              例: https://x.com/i/lists/[list_id]/members
             </p>
           </div>
         )}

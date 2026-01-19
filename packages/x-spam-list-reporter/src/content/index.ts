@@ -18,7 +18,10 @@ chrome.runtime.onMessage.addListener(
 
     if (message.type === 'CHECK_LIST_PAGE') {
       // リストページかどうか確認
-      const isListPage = window.location.pathname.includes('/lists/');
+      // /i/lists/[list_id]/members の形式のみを許可
+      const listMembersPattern = /^\/i\/lists\/\d+\/members$/;
+      const isListPage = listMembersPattern.test(window.location.pathname);
+      logger.debug({ pathname: window.location.pathname, isListPage }, 'リストページチェック');
       sendResponse({ type: 'LIST_PAGE_CHECK_RESULT', isListPage });
       return true;
     }

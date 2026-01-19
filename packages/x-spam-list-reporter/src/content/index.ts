@@ -21,7 +21,10 @@ chrome.runtime.onMessage.addListener(
       // /i/lists/[list_id]/members の形式のみを許可
       const listMembersPattern = /^\/i\/lists\/\d+\/members$/;
       const isListPage = listMembersPattern.test(window.location.pathname);
-      logger.debug({ pathname: window.location.pathname, isListPage }, 'リストページチェック');
+      logger.debug(
+        { pathname: window.location.pathname, isListPage },
+        'リストページチェック',
+      );
       sendResponse({ type: 'LIST_PAGE_CHECK_RESULT', isListPage });
       return true;
     }

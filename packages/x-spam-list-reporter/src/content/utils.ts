@@ -6,8 +6,10 @@ const logger = getLogger('utils');
  * setIntervalで要素の出現を待つ
  */
 export async function waitForElement(
-  selector: string,
-  timeout: number = 5 * 1000,
+  { selector, timeout }: { selector: string; timeout: number } = {
+    selector: '',
+    timeout: 5 * 1000,
+  },
 ): Promise<Element | null> {
   return new Promise((resolve) => {
     const startTime = Date.now();

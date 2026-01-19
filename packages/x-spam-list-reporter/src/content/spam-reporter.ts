@@ -12,10 +12,10 @@ export async function reportUserAsSpam(): Promise<boolean> {
 
   try {
     // 1. 3点リーダーを待機してクリック
-    const moreButton = await waitForElement(
-      '[data-testid="userActions"]',
-      5 * 1000,
-    );
+    const moreButton = await waitForElement({
+      selector: '[data-testid="userActions"]',
+      timeout: 5 * 1000,
+    });
     if (!moreButton) {
       logger.error('3点リーダーが見つかりません');
       return false;
@@ -36,7 +36,10 @@ export async function reportUserAsSpam(): Promise<boolean> {
     await wait(1000);
 
     // 3. 「スパム」を選択
-    const radioGroup = await waitForElement('div[role="radiogroup"]', 5 * 1000);
+    const radioGroup = await waitForElement({
+      selector: 'div[role="radiogroup"]',
+      timeout: 5 * 1000,
+    });
     if (!radioGroup) {
       logger.error('ラジオグループが見つかりません');
       return false;

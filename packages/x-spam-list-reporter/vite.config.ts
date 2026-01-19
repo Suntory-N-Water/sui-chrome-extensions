@@ -7,7 +7,7 @@ import { defineConfig } from 'vite';
 const manifest = defineManifest({
   manifest_version: 3,
   name: 'X Lists User Spam Reporter',
-  version: '0.0.0',
+  version: '0.2.0',
   description: 'リストのメンバーを一括スパム報告するツール',
   permissions: ['tabs', 'activeTab', 'storage', 'scripting'],
   host_permissions: ['https://x.com/*', 'http://localhost:5173/*'],

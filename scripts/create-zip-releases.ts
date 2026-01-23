@@ -41,7 +41,16 @@ async function createZipReleases() {
       continue;
     }
 
-    const packageDir = join('packages', packageDirName);
+    let packageDir = join('packages', packageDirName);
+    if (!existsSync(packageDir)) {
+      packageDir = join('apps', packageDirName);
+    }
+
+    if (!existsSync(packageDir)) {
+      console.log(`⚠ Skipping ${tag}: directory not found in packages or apps`);
+      continue;
+    }
+
     const distDir = join(packageDir, 'dist');
 
     if (!existsSync(distDir)) {

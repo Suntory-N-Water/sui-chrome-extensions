@@ -12,10 +12,13 @@ node_modules
 
 # モノレポ対応
 packages/*/dist
-packages/*/dist-ssr
 packages/*/node_modules
 packages/*/.turbo
 packages/*/tsconfig.tsbuildinfo
+apps/*/dist
+apps/*/node_modules
+apps/*/.turbo
+apps/*/tsconfig.tsbuildinfo
 *.tsbuildinfo
 
 # Editor directories and files

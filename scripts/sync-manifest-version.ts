@@ -6,10 +6,13 @@ import { globSync } from 'glob';
  * package.jsonのバージョンをvite.config.tsのmanifest.versionに同期
  */
 function syncManifestVersions() {
-  // packages/配下の全拡張機能を取得（uiは除外）
-  const packageDirs = globSync('packages/*/package.json', {
-    ignore: ['packages/ui/**'],
-  });
+  // packages/とapps/配下の全拡張機能を取得（uiは除外）
+  const packageDirs = globSync(
+    ['packages/*/package.json', 'apps/*/package.json'],
+    {
+      ignore: ['packages/ui/**', 'apps/ui/**'],
+    },
+  );
 
   for (const pkgPath of packageDirs) {
     const packageJson = JSON.parse(readFileSync(pkgPath, 'utf-8'));

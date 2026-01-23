@@ -2,7 +2,7 @@
   "files": [],
   "references": [
     { "path": "./packages/ui" },
-    { "path": "./packages/heavenly-reviews-collector" },
-    { "path": "./packages/x-spam-list-reporter" }
+    { "path": "./apps/heavenly-reviews-collector" },
+    { "path": "./apps/x-spam-list-reporter" }
   ]
 }

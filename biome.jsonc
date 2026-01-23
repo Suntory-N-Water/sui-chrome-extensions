@@ -65,7 +65,7 @@
         "noUnnecessaryConditions": "error"
       }
     },
-    "includes": ["packages/**/*.{js,jsx,ts,tsx}"]
+    "includes": ["packages/**/*.{js,jsx,ts,tsx}", "apps/**/*.{js,jsx,ts,tsx}"]
   },
   "javascript": {
     "formatter": {
@@ -102,7 +102,7 @@
       }
     },
     {
-      "includes": ["packages/common/src/logger.ts"],
+      "includes": ["packages/common/src/logger.ts", "apps/common/src/logger.ts"],
       "linter": {
         "enabled": false
       }
